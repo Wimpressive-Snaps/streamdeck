@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=StreamDeck UI
+Exec=streamdeck-ui
+Icon=${SNAP}/meta/gui/streamdeck-ui.png
+Type=Application
+Terminal=false
+Categories=AudioVideo;

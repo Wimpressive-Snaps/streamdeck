@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+rm /etc/udev/rules.d/99-streamdeck.rules
+udevadm control --reload-rules
+udevadm trigger

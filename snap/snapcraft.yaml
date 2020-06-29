@@ -1,0 +1,85 @@
+name: streamdeck-ui
+base: core18
+version: '1.0.2.1'
+summary: Elgato Stream Deck UI
+description: |
+  Elgato Stream Deck UI for Linux
+
+grade: stable
+confinement: classic
+
+parts:
+  streamdeck-ui:
+    plugin: python
+    source: https://github.com/flexiondotorg/streamdeck-ui.git
+    build-packages:
+      - build-essential
+      - libhidapi-dev
+      - libudev-dev
+      - libusb-1.0-0-dev
+    build-environment:
+      - C_INCLUDE_PATH: /usr/include/python3.6
+    stage-packages:
+      - libasound2
+      - libdrm2
+      - libegl1
+      - libgl1
+      - libgstreamer1.0-0
+      - libgstreamer-plugins-base1.0-0
+      - libgtk-3-0
+      - libhidapi-libusb0
+      - libnspr4
+      - libnss3
+      - libodbc1
+      - libpq5
+      - libpulse-mainloop-glib0
+      - libspeechd2
+      - libusb-1.0-0
+      - libx11-xcb1
+      - libxcb-xfixes0
+      - libxcb-glx0
+      - libxkbcommon-x11-0
+      - libxtst6
+    override-build: |
+      snapcraftctl build
+      pip3 install .
+
+  launcher:
+    after:  [streamdeck-ui]
+    plugin: dump
+    source: snap/local/
+    organize:
+      'launcher': bin/
+
+  cleanup:
+    after: [launcher]
+    plugin: nil
+    override-prime: |
+      set -eux
+      for CRUFT in \
+        usr/include \
+        usr/lib/python3.6/lib2to3 \
+        usr/lib/python3.7 \
+        usr/lib/python3.8 \
+        usr/local/bin/pyside2* \
+        usr/local/lib/python3.6/dist-packages/PySide2/include \
+        usr/local/lib/python3.6/dist-packages/PySide2/examples \
+        usr/local/lib/python3.6/dist-packages/shiboken2/docs \
+        usr/share/bug \
+        usr/share/icons \
+        usr/share/lintian \
+        usr/share/man; do
+        rm -rf ${SNAPCRAFT_PRIME}/${CRUFT}
+      done
+      find ${SNAPCRAFT_PRIME}/usr/share/doc/ -type f -not -name 'copyright' -delete
+
+apps:
+  streamdeck-ui:
+    command: usr/local/bin/streamdeck
+    command-chain:
+      - bin/launcher
+      - usr/bin/python3
+    environment:
+      # Correct the TMPDIR path for Chromium Framework/Electron to
+      # ensure libappindicator has readable resources
+      TMPDIR: $XDG_RUNTIME_DIR
